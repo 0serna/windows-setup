@@ -37,15 +37,20 @@ function Set-InternationalKeyboardIfNeeded {
         $entry = $list | Where-Object { $_.LanguageTag -eq $languageTag } | Select-Object -First 1
     }
 
-    if ($entry.InputMethodTips -contains $inputTip) {
-        Add-SetupResult -Category Satisfied -Message 'English International keyboard is configured'
-        Write-SetupLog 'English International keyboard is already configured.'
+    $currentInputTips = @($entry.InputMethodTips)
+    $defaultInputMethodOverride = Get-WinDefaultInputMethodOverride
+    $defaultInputTip = if ($null -eq $defaultInputMethodOverride) { $null } else { $defaultInputMethodOverride.InputMethodTip }
+    if ($currentInputTips.Count -eq 1 -and $currentInputTips[0] -eq $inputTip -and $defaultInputTip -eq $inputTip) {
+        Add-SetupResult -Category Satisfied -Message 'Only English International keyboard is configured'
+        Write-SetupLog 'Only English International keyboard is already configured.'
         return
     }
 
+    $entry.InputMethodTips.Clear()
     $entry.InputMethodTips.Add($inputTip)
     Set-WinUserLanguageList -LanguageList $list -Force
-    Add-SetupResult -Category Applied -Message 'English International keyboard configured'
+    Set-WinDefaultInputMethodOverride -InputTip $inputTip
+    Add-SetupResult -Category Applied -Message 'Only English International keyboard configured'
     Add-RestartRequired 'Keyboard/input changes may require sign-out.'
 }
 

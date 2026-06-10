@@ -5,7 +5,7 @@ Applies Windows/user preferences idempotently.
 ## Changes
 
 - Sets regional format to United States (`en-US`).
-- Adds English International keyboard (`0409:00020409`).
+- Configures only English International keyboard (`0409:00020409`).
 - Disables toast notifications.
 - Enables Storage Sense.
 - Enables Storage Sense temporary file cleanup.
