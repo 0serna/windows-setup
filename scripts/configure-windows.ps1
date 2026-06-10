@@ -1,11 +1,13 @@
 param(
     [string] $LogPath,
-    [switch] $ThrowOnFailure
+    [switch] $ThrowOnFailure,
+    [switch] $SuppressSummary,
+    [switch] $Quiet
 )
 
 . (Join-Path $PSScriptRoot 'lib\common.ps1')
 
-Initialize-SetupLog -LogPath $LogPath
+Initialize-SetupLog -LogPath $LogPath -DefaultPrefix 'configure-windows' -Quiet:$Quiet
 New-SetupResultState
 $script:SetupError = $null
 
@@ -260,7 +262,9 @@ catch {
     $script:SetupError = $_
 }
 finally {
-    Show-SetupSummary
+    if (-not $SuppressSummary) {
+        Show-SetupSummary
+    }
 }
 
 if ($null -ne $script:SetupError) {

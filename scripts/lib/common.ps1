@@ -1,19 +1,30 @@
 Set-StrictMode -Version Latest
 
+function New-SetupLogPath {
+    param(
+        [string] $Prefix = 'setup'
+    )
+
+    $repoRoot = Convert-Path (Join-Path $PSScriptRoot '..\..')
+    $logDirectory = Join-Path $repoRoot 'logs'
+    New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
+    $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss-fffffff'
+    return Join-Path $logDirectory "$Prefix-$timestamp.log"
+}
+
 function Initialize-SetupLog {
     param(
-        [string] $LogPath
+        [string] $LogPath,
+        [string] $DefaultPrefix = 'setup',
+        [switch] $Quiet
     )
 
     if ([string]::IsNullOrWhiteSpace($LogPath)) {
-        $repoRoot = Resolve-Path (Join-Path $PSScriptRoot '..\..')
-        $logDirectory = Join-Path $repoRoot 'logs'
-        New-Item -ItemType Directory -Path $logDirectory -Force | Out-Null
-        $timestamp = Get-Date -Format 'yyyyMMdd-HHmmss-fffffff'
-        $LogPath = Join-Path $logDirectory "setup-$timestamp.log"
+        $LogPath = New-SetupLogPath -Prefix $DefaultPrefix
     }
 
     $script:SetupLogPath = $LogPath
+    $script:SetupQuiet = $Quiet.IsPresent
     $parent = Split-Path -Parent $script:SetupLogPath
     if (-not [string]::IsNullOrWhiteSpace($parent)) {
         New-Item -ItemType Directory -Path $parent -Force | Out-Null
@@ -25,11 +36,15 @@ function Initialize-SetupLog {
 function Write-SetupLog {
     param(
         [Parameter(Mandatory)] [string] $Message,
-        [ValidateSet('INFO', 'WARN', 'ERROR', 'SUCCESS')] [string] $Level = 'INFO'
+        [ValidateSet('INFO', 'WARN', 'ERROR', 'SUCCESS')] [string] $Level = 'INFO',
+        [switch] $NoConsole
     )
 
     $line = "[$(Get-Date -Format o)] [$Level] $Message"
-    Write-Host $line
+    $quiet = (Get-Variable -Name SetupQuiet -Scope Script -ErrorAction SilentlyContinue) -and $script:SetupQuiet
+    if (-not $NoConsole -and -not $quiet) {
+        Write-Host $line
+    }
 
     if (Get-Variable -Name SetupLogPath -Scope Script -ErrorAction SilentlyContinue) {
         $line | Out-File -FilePath $script:SetupLogPath -Encoding utf8 -Append

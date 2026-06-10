@@ -1,12 +1,14 @@
 param(
     [string] $AppListPath = (Join-Path $PSScriptRoot '..\data\winget-apps.json'),
     [string] $LogPath,
-    [switch] $ThrowOnFailure
+    [switch] $ThrowOnFailure,
+    [switch] $SuppressSummary,
+    [switch] $Quiet
 )
 
 . (Join-Path $PSScriptRoot 'lib\common.ps1')
 
-Initialize-SetupLog -LogPath $LogPath
+Initialize-SetupLog -LogPath $LogPath -DefaultPrefix 'install-apps' -Quiet:$Quiet
 New-SetupResultState
 $script:SetupError = $null
 
@@ -15,6 +17,12 @@ function Test-WingetAppInstalled {
 
     $output = & winget list --id $Id --exact --source winget --disable-interactivity 2>&1
     return ($LASTEXITCODE -eq 0 -and ($output -join "`n") -match [regex]::Escape($Id))
+}
+
+function Test-WingetProgressLine {
+    param([Parameter(Mandatory)] [string] $Line)
+
+    return $Line -match '(KB|MB|GB)\s*/\s*\d+(\.\d+)?\s*(KB|MB|GB)'
 }
 
 try {
@@ -48,7 +56,12 @@ try {
         }
 
         Write-SetupLog "Installing $name ($id)."
-        & winget install --id $id --exact --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
+        $installOutput = & winget install --id $id --exact --source winget --accept-package-agreements --accept-source-agreements --disable-interactivity --silent 2>&1
+        foreach ($line in $installOutput) {
+            if (-not [string]::IsNullOrWhiteSpace($line) -and -not (Test-WingetProgressLine -Line $line)) {
+                Write-SetupLog "winget: $line" -NoConsole
+            }
+        }
 
         if ($LASTEXITCODE -eq 0) {
             Add-SetupResult -Category Applied -Message "$name ($id) installed"
@@ -67,7 +80,9 @@ catch {
     $script:SetupError = $_
 }
 finally {
-    Show-SetupSummary
+    if (-not $SuppressSummary) {
+        Show-SetupSummary
+    }
 }
 
 if ($null -ne $script:SetupError) {
