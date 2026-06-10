@@ -215,8 +215,7 @@ try {
 
     Set-BluetoothRadioOff
 
-    # Only Recycle Bin is visible by default in Windows 11; hide it for a clean desktop.
-    # Other icons (Computer, User's Files, Network, Control Panel) are already hidden by default.
+    # Hide Recycle Bin desktop icon (other default icons are already hidden in Windows 11).
     $defaultDesktopIconPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel'
     $defaultDesktopIcons = @(
         @{ Name = '{645FF040-5081-101B-9F08-00AA002F954E}'; Description = 'Default desktop icon hidden: Recycle Bin' }
