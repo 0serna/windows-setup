@@ -1,0 +1,44 @@
+{
+  "apps": [
+    {
+      "name": "Microsoft PowerToys",
+      "wingetId": "Microsoft.PowerToys"
+    },
+    {
+      "name": "Visual Studio Code",
+      "wingetId": "Microsoft.VisualStudioCode"
+    },
+    {
+      "name": "JetBrains DataGrip",
+      "wingetId": "JetBrains.DataGrip"
+    },
+    {
+      "name": "Sublime Text",
+      "wingetId": "SublimeHQ.SublimeText.4"
+    },
+    {
+      "name": "MSI Afterburner",
+      "wingetId": "Guru3D.Afterburner"
+    },
+    {
+      "name": "OCCT",
+      "wingetId": "OCBase.OCCT.Personal"
+    },
+    {
+      "name": "Logi Options+",
+      "wingetId": "Logitech.OptionsPlus"
+    },
+    {
+      "name": "Windows Terminal",
+      "wingetId": "Microsoft.WindowsTerminal"
+    },
+    {
+      "name": "JetBrainsMono Nerd Font",
+      "wingetId": "DEVCOM.JetBrainsMonoNerdFont"
+    },
+    {
+      "name": "Kingston SSD Manager",
+      "wingetId": "Kingston.SSDManager"
+    }
+  ]
+}
