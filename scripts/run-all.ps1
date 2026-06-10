@@ -7,15 +7,7 @@ param(
 Initialize-SetupLog -LogPath $LogPath -DefaultPrefix 'setup'
 New-SetupResultState
 $script:SetupError = $null
-
-function Join-SetupStepMessage {
-    param(
-        [Parameter(Mandatory)] [string] $Message,
-        [Parameter(Mandatory)] [string] $DetailLogPath
-    )
-
-    return "$($Message.TrimEnd('.')). Details: $DetailLogPath"
-}
+$script:ScriptSteps = [System.Collections.Generic.List[hashtable]]::new()
 
 function Invoke-SetupStep {
     param(
@@ -25,17 +17,21 @@ function Invoke-SetupStep {
     )
 
     $detailLogPath = New-SetupLogPath -Prefix $LogPrefix
-    Write-SetupLog (Join-SetupStepMessage -Message "Starting step: $Name" -DetailLogPath $detailLogPath)
+    $summaryPath = Get-SetupSummaryPath -LogPath $detailLogPath
+    $stepEntry = @{ Name = $Name; LogPath = $detailLogPath; Message = '' }
+    Write-SetupLog "Starting step: $Name"
     try {
-        & $ScriptPath -LogPath $detailLogPath -ThrowOnFailure -SuppressSummary -Quiet
-        $message = Join-SetupStepMessage -Message "$Name completed" -DetailLogPath $detailLogPath
-        Add-SetupResult -Category Applied -Message $message
-        Write-SetupLog $message -Level SUCCESS
+        & $ScriptPath -LogPath $detailLogPath -SummaryPath $summaryPath -ThrowOnFailure -SuppressSummary -Quiet
+        $stepEntry.Message = 'completed'
+        $script:ScriptSteps.Add($stepEntry)
+        Write-SetupLog "$Name completed." -Level SUCCESS
+        Add-SetupResult -Category Applied -Message "$Name completed."
     }
     catch {
-        $message = Join-SetupStepMessage -Message "$Name failed: $($_.Exception.Message)" -DetailLogPath $detailLogPath
-        Add-SetupResult -Category Failed -Message $message
-        Write-SetupLog $message -Level ERROR
+        $stepEntry.Message = "failed: $($_.Exception.Message)"
+        $script:ScriptSteps.Add($stepEntry)
+        Write-SetupLog "$Name failed: $($_.Exception.Message)" -Level ERROR
+        Add-SetupResult -Category Failed -Message "$Name failed: $($_.Exception.Message)"
     }
 }
 
@@ -55,7 +51,12 @@ catch {
     $script:SetupError = $_
 }
 finally {
-    Show-SetupSummary
+    if ($script:ScriptSteps.Count -gt 0) {
+        Show-GroupedSetupSummary -ScriptSteps $script:ScriptSteps
+    }
+    else {
+        Show-SetupSummary
+    }
 }
 
 if ($null -ne $script:SetupError) {

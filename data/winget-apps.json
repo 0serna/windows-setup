@@ -2,43 +2,53 @@
   "apps": [
     {
       "name": "Microsoft PowerToys",
-      "wingetId": "Microsoft.PowerToys"
+      "wingetId": "Microsoft.PowerToys",
+      "manualUrl": "https://github.com/microsoft/PowerToys/releases/latest"
     },
     {
       "name": "Visual Studio Code",
-      "wingetId": "Microsoft.VisualStudioCode"
+      "wingetId": "Microsoft.VisualStudioCode",
+      "manualUrl": "https://code.visualstudio.com/download"
     },
     {
       "name": "JetBrains DataGrip",
-      "wingetId": "JetBrains.DataGrip"
+      "wingetId": "JetBrains.DataGrip",
+      "manualUrl": "https://www.jetbrains.com/datagrip/download/"
     },
     {
       "name": "Sublime Text",
-      "wingetId": "SublimeHQ.SublimeText.4"
+      "wingetId": "SublimeHQ.SublimeText.4",
+      "manualUrl": "https://www.sublimetext.com/download"
     },
     {
       "name": "MSI Afterburner",
-      "wingetId": "Guru3D.Afterburner"
+      "wingetId": "Guru3D.Afterburner",
+      "manualUrl": "https://www.msi.com/Landing/afterburner/graphics-cards"
     },
     {
       "name": "OCCT",
-      "wingetId": "OCBase.OCCT.Personal"
+      "wingetId": "OCBase.OCCT.Personal",
+      "manualUrl": "https://www.ocbase.com/download"
     },
     {
       "name": "Logi Options+",
-      "wingetId": "Logitech.OptionsPlus"
+      "wingetId": "Logitech.OptionsPlus",
+      "manualUrl": "https://www.logitech.com/en-us/software/logi-options-plus"
     },
     {
       "name": "Windows Terminal",
-      "wingetId": "Microsoft.WindowsTerminal"
+      "wingetId": "Microsoft.WindowsTerminal",
+      "manualUrl": "https://aka.ms/terminal"
     },
     {
       "name": "JetBrainsMono Nerd Font",
-      "wingetId": "DEVCOM.JetBrainsMonoNerdFont"
+      "wingetId": "DEVCOM.JetBrainsMonoNerdFont",
+      "manualUrl": "https://github.com/ryanoasis/nerd-fonts/releases/latest"
     },
     {
       "name": "Kingston SSD Manager",
-      "wingetId": "Kingston.SSDManager"
+      "wingetId": "Kingston.SSDManager",
+      "manualUrl": "https://www.kingston.com/en/support/technical/ssdmanager"
     }
   ]
 }

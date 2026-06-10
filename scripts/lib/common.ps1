@@ -12,6 +12,41 @@ function New-SetupLogPath {
     return Join-Path $logDirectory "$Prefix-$timestamp.log"
 }
 
+function Get-SetupSummaryPath {
+    param(
+        [Parameter(Mandatory)] [string] $LogPath
+    )
+
+    return $LogPath -replace '\.log$', '.summary.json'
+}
+
+function Get-RepoRelativePath {
+    param(
+        [Parameter(Mandatory)] [string] $Path
+    )
+
+    $repoRoot = Convert-Path (Join-Path $PSScriptRoot '..\..')
+    if ($Path.StartsWith($repoRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $Path.Substring($repoRoot.Length + 1)
+    }
+
+    return $Path
+}
+
+function Write-SetupSummaryJson {
+    param(
+        [Parameter(Mandatory)] [string] $SummaryPath,
+        [Parameter(Mandatory)] [hashtable] $Data
+    )
+
+    $parent = Split-Path -Parent $SummaryPath
+    if (-not [string]::IsNullOrWhiteSpace($parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
+
+    $Data | ConvertTo-Json -Depth 10 | Out-File -FilePath $SummaryPath -Encoding utf8
+}
+
 function Initialize-SetupLog {
     param(
         [string] $LogPath,
@@ -166,6 +201,78 @@ function Add-RestartRequired {
     param([Parameter(Mandatory)] [string] $Message)
     Add-SetupResult -Category RestartRequired -Message $Message
     Write-SetupLog "Restart or sign-out required later: $Message" -Level WARN
+}
+
+function Get-ScriptPrefix {
+    param(
+        [Parameter(Mandatory)] [string] $Name
+    )
+
+    $prefixMap = @{
+        'Winget app installation' = 'install-apps'
+        'Windows configuration'   = 'configure-windows'
+        'Custom WinUtil'          = 'run-winutil'
+    }
+
+    if ($prefixMap.ContainsKey($Name)) {
+        return $prefixMap[$Name]
+    }
+
+    $normalized = $Name.ToLowerInvariant() -replace '[^a-z0-9]+', '-'
+    return $normalized.Trim('-')
+}
+
+function Get-ScriptSummaryPath {
+    param(
+        [Parameter(Mandatory)] [string] $LogPath
+    )
+
+    return $LogPath -replace '\.log$', '.summary.json'
+}
+
+function Show-GroupedSetupSummary {
+    param(
+        [Parameter(Mandatory)] [array] $ScriptSteps,
+        [string] $SummaryPath
+    )
+
+    Write-SetupLog 'Summary:'
+    foreach ($step in $ScriptSteps) {
+        $summaryFilePath = Get-ScriptSummaryPath -LogPath $step.LogPath
+        $sectionName = $step.Name
+        $relativePath = Get-RepoRelativePath -Path $step.LogPath
+
+        Write-SetupLog ' '
+        Write-SetupLog "  $sectionName"
+        Write-SetupLog "    Details: $relativePath"
+
+        $useFallback = $true
+        if (Test-Path -LiteralPath $summaryFilePath) {
+            $summaryData = Get-Content -LiteralPath $summaryFilePath -Raw | ConvertFrom-Json
+            if ($null -ne $summaryData -and (@($summaryData.PSObject.Properties.Name).Count -gt 0)) {
+                $useFallback = $false
+                foreach ($prop in $summaryData.PSObject.Properties) {
+                    $category = $prop.Name
+                    $items = @($prop.Value)
+                    $count = $items.Count
+                    Write-SetupLog "    ${category}: $count"
+                    foreach ($item in $items) {
+                        Write-SetupLog "      - $item"
+                    }
+                }
+            }
+        }
+
+        if ($useFallback -and -not [string]::IsNullOrWhiteSpace($step.Message)) {
+            Write-SetupLog "    Status: $($step.Message)"
+        }
+    }
+
+    if ($SummaryPath) {
+        Write-SetupLog ' '
+        $relativePath = Get-RepoRelativePath -Path $SummaryPath
+        Write-SetupLog "  Details: $relativePath"
+    }
 }
 
 function Restart-ExplorerShell {

@@ -1,5 +1,6 @@
 param(
     [string] $LogPath,
+    [string] $SummaryPath,
     [switch] $ThrowOnFailure,
     [switch] $SuppressSummary,
     [switch] $Quiet
@@ -262,6 +263,27 @@ catch {
     $script:SetupError = $_
 }
 finally {
+    $summaryData = [ordered]@{}
+    if ((Get-Variable -Name SetupResults -Scope Script -ErrorAction SilentlyContinue)) {
+        $applied = @($script:SetupResults['Applied'])
+        $satisfied = @($script:SetupResults['Satisfied'])
+        $manual = @($script:SetupResults['Manual'])
+        $failed = @($script:SetupResults['Failed'])
+        if ($applied.Count -gt 0) { $summaryData['Applied'] = $applied }
+        if ($satisfied.Count -gt 0) { $summaryData['Already configured'] = $satisfied }
+        if ($manual.Count -gt 0) { $summaryData['Manual'] = $manual }
+        if ($failed.Count -gt 0) { $summaryData['Failed'] = $failed }
+    }
+
+    $effectiveSummaryPath = $SummaryPath
+    if ([string]::IsNullOrWhiteSpace($effectiveSummaryPath) -and (Get-Variable -Name SetupLogPath -Scope Script -ErrorAction SilentlyContinue)) {
+        $effectiveSummaryPath = Get-SetupSummaryPath -LogPath $script:SetupLogPath
+    }
+
+    if ($summaryData.Count -gt 0 -and -not [string]::IsNullOrWhiteSpace($effectiveSummaryPath)) {
+        Write-SetupSummaryJson -SummaryPath $effectiveSummaryPath -Data $summaryData
+    }
+
     if (-not $SuppressSummary) {
         Show-SetupSummary
     }

@@ -1,5 +1,6 @@
 param(
     [string] $LogPath,
+    [string] $SummaryPath,
     [switch] $ThrowOnFailure,
     [switch] $SuppressSummary,
     [switch] $Quiet
@@ -66,6 +67,17 @@ catch {
     $script:SetupError = $_
 }
 finally {
+    $effectiveSummaryPath = $SummaryPath
+    if ([string]::IsNullOrWhiteSpace($effectiveSummaryPath) -and (Get-Variable -Name SetupLogPath -Scope Script -ErrorAction SilentlyContinue)) {
+        $effectiveSummaryPath = Get-SetupSummaryPath -LogPath $script:SetupLogPath
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($effectiveSummaryPath)) {
+        $status = if (Test-SetupHasFailures) { 'failed' } else { 'completed' }
+        $summaryData = [ordered]@{ 'Status' = @($status) }
+        Write-SetupSummaryJson -SummaryPath $effectiveSummaryPath -Data $summaryData
+    }
+
     if (-not $SuppressSummary) {
         Show-SetupSummary
     }
