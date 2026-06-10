@@ -215,18 +215,11 @@ try {
 
     Set-BluetoothRadioOff
 
-    if (Set-RegistryValueIfNeeded -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideIcons' -Value 0 -Type DWord -Description 'Desktop icons visible') {
-        $explorerRestartNeeded = $true
-        $desktopIconSettingsChanged = $true
-    }
-
+    # Only Recycle Bin is visible by default in Windows 11; hide it for a clean desktop.
+    # Other icons (Computer, User's Files, Network, Control Panel) are already hidden by default.
     $defaultDesktopIconPath = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel'
     $defaultDesktopIcons = @(
-        @{ Name = '{20D04FE0-3AEA-1069-A2D8-08002B30309D}'; Description = 'Default desktop icon hidden: Computer' },
-        @{ Name = '{59031a47-3f72-44a7-89c5-5595fe6b30ee}'; Description = "Default desktop icon hidden: User's Files" },
-        @{ Name = '{F02C1A0D-BE21-4350-88B0-7367FC96EF3C}'; Description = 'Default desktop icon hidden: Network' },
-        @{ Name = '{645FF040-5081-101B-9F08-00AA002F954E}'; Description = 'Default desktop icon hidden: Recycle Bin' },
-        @{ Name = '{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}'; Description = 'Default desktop icon hidden: Control Panel' }
+        @{ Name = '{645FF040-5081-101B-9F08-00AA002F954E}'; Description = 'Default desktop icon hidden: Recycle Bin' }
     )
 
     foreach ($icon in $defaultDesktopIcons) {
@@ -248,7 +241,6 @@ try {
         Restart-ExplorerShell
 
         if ($desktopIconSettingsChanged) {
-            New-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideIcons' -Value 0 -PropertyType DWord -Force | Out-Null
             New-Item -Path $defaultDesktopIconPath -Force | Out-Null
             foreach ($icon in $defaultDesktopIcons) {
                 New-ItemProperty -Path $defaultDesktopIconPath -Name $icon.Name -Value 1 -PropertyType DWord -Force | Out-Null

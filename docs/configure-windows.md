@@ -15,8 +15,7 @@ Applies Windows/user preferences idempotently.
 - Sets downloads cleanup retention to 60 days.
 - Sets Storage Sense cadence to monthly.
 - Turns Bluetooth radio off without disabling the Bluetooth adapter.
-- Keeps desktop icons globally visible.
-- Hides only the default Windows 11 desktop icons: Computer, User's Files, Network, Recycle Bin, and Control Panel.
+- Hides the Recycle Bin desktop icon.
 - Sets visual effects to best performance.
 - Keeps smooth screen font edges enabled.
 - Adds Windows Terminal `shift+enter` binding to send the escape sequence for newline input.
