@@ -6,6 +6,8 @@ Applies Windows/user preferences idempotently.
 
 - Sets regional format to United States (`en-US`).
 - Configures only English International keyboard (`0409:00020409`).
+- Disables Windows autocorrection for the current user.
+- Disables Windows spell checking for the current user.
 - Disables toast notifications.
 - Enables Storage Sense.
 - Enables Storage Sense temporary file cleanup.
@@ -16,7 +18,6 @@ Applies Windows/user preferences idempotently.
 - Sets Storage Sense cadence to monthly.
 - Turns Bluetooth radio off without disabling the Bluetooth adapter.
 - Hides the Recycle Bin desktop icon.
-- Sets visual effects to best performance.
 - Keeps smooth screen font edges enabled.
 - Adds Windows Terminal `shift+enter` binding to send the escape sequence for newline input.
 
@@ -26,3 +27,4 @@ Applies Windows/user preferences idempotently.
 - Leaves already-correct settings unchanged.
 - Restarts Explorer only when Explorer-related settings changed.
 - Never restarts Windows automatically.
+- Windows writing-service changes can require signing out; they do not change spelling features managed by individual applications.

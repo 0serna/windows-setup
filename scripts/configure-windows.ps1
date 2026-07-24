@@ -208,6 +208,17 @@ try {
     Set-CultureIfNeeded
     Set-InternationalKeyboardIfNeeded
 
+    $writingAssistanceChanged = $false
+    if (Set-RegistryValueIfNeeded -Path 'HKCU:\Software\Microsoft\TabletTip\1.7' -Name 'EnableAutocorrection' -Value 0 -Type DWord -Description 'Windows autocorrection disabled') {
+        $writingAssistanceChanged = $true
+    }
+    if (Set-RegistryValueIfNeeded -Path 'HKCU:\Software\Microsoft\TabletTip\1.7' -Name 'EnableSpellchecking' -Value 0 -Type DWord -Description 'Windows spell checking disabled') {
+        $writingAssistanceChanged = $true
+    }
+    if ($writingAssistanceChanged) {
+        Add-RestartRequired 'Windows writing-service changes may require sign-out.'
+    }
+
     Set-RegistryValueIfNeeded -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\PushNotifications' -Name 'ToastEnabled' -Value 0 -Type DWord -Description 'Notifications disabled' | Out-Null
 
     Set-RegistryValueIfNeeded -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\StorageSense\Parameters\StoragePolicy' -Name '01' -Value 1 -Type DWord -Description 'Storage Sense enabled' | Out-Null
@@ -231,10 +242,6 @@ try {
             $explorerRestartNeeded = $true
             $desktopIconSettingsChanged = $true
         }
-    }
-
-    if (Set-RegistryValueIfNeeded -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects' -Name 'VisualFXSetting' -Value 2 -Type DWord -Description 'Visual effects set to best performance') {
-        $explorerRestartNeeded = $true
     }
 
     Set-RegistryValueIfNeeded -Path 'HKCU:\Control Panel\Desktop' -Name 'FontSmoothing' -Value '2' -Type String -Description 'Smooth edges of screen fonts enabled' | Out-Null

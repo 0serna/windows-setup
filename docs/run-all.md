@@ -11,7 +11,7 @@ Runs the full setup workflow.
 ## Behavior
 
 - Requires Administrator and Windows 11.
-- Uses one shared log file for all child scripts.
+- Each child script writes to its own log file; the parent log captures high-level step results and a grouped summary.
 - Runs WinUtil last.
 - Does not mark a child step completed if that child script reports failures.
 - Continues to later steps when one child step fails.
