@@ -134,6 +134,74 @@ function Set-BluetoothRadioOff {
     }
 }
 
+function Test-RegistryBytesEqual {
+    param(
+        [byte[]] $Left,
+        [byte[]] $Right
+    )
+
+    if ($null -eq $Left -and $null -eq $Right) {
+        return $true
+    }
+
+    if ($null -eq $Left -or $null -eq $Right) {
+        return $false
+    }
+
+    if ($Left.Length -ne $Right.Length) {
+        return $false
+    }
+
+    for ($i = 0; $i -lt $Left.Length; $i++) {
+        if ($Left[$i] -ne $Right[$i]) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Set-BestAppearanceVisualEffectsIfNeeded {
+    $bestAppearanceMask = [byte[]](0x9E, 0x3E, 0x07, 0x80, 0x12, 0x00, 0x00, 0x00)
+    $changed = $false
+
+    $visualEffectSettings = @(
+        @{ Path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\VisualEffects'; Name = 'VisualFXSetting'; Value = 1; Type = 'DWord'; Description = 'Visual effects preset set to best appearance' },
+        @{ Path = 'HKCU:\Control Panel\Desktop'; Name = 'DragFullWindows'; Value = '1'; Type = 'String'; Description = 'Show window contents while dragging enabled' },
+        @{ Path = 'HKCU:\Control Panel\Desktop\WindowMetrics'; Name = 'MinAnimate'; Value = '1'; Type = 'String'; Description = 'Minimize/maximize animations enabled' },
+        @{ Path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'ListviewAlphaSelect'; Value = 1; Type = 'DWord'; Description = 'List view fade effect enabled' },
+        @{ Path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'ListviewShadow'; Value = 1; Type = 'DWord'; Description = 'List view drop shadows enabled' },
+        @{ Path = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced'; Name = 'TaskbarAnimations'; Value = 1; Type = 'DWord'; Description = 'Taskbar animations enabled' },
+        @{ Path = 'HKCU:\Software\Microsoft\Windows\DWM'; Name = 'EnableAeroPeek'; Value = 1; Type = 'DWord'; Description = 'Aero Peek enabled' }
+    )
+
+    foreach ($setting in $visualEffectSettings) {
+        if (Set-RegistryValueIfNeeded -Path $setting.Path -Name $setting.Name -Value $setting.Value -Type $setting.Type -Description $setting.Description) {
+            $changed = $true
+        }
+    }
+
+    $desktopPath = 'HKCU:\Control Panel\Desktop'
+    if (-not (Test-Path $desktopPath)) {
+        New-Item -Path $desktopPath -Force | Out-Null
+    }
+
+    $currentMask = Get-ItemProperty -Path $desktopPath -Name 'UserPreferencesMask' -ErrorAction SilentlyContinue
+    $currentBytes = if ($null -ne $currentMask) { [byte[]]$currentMask.UserPreferencesMask } else { $null }
+    if (Test-RegistryBytesEqual -Left $currentBytes -Right $bestAppearanceMask) {
+        Add-SetupResult -Category Satisfied -Message 'Visual effects mask set to best appearance'
+        Write-SetupLog 'Already configured: Visual effects mask set to best appearance'
+    }
+    else {
+        New-ItemProperty -Path $desktopPath -Name 'UserPreferencesMask' -Value $bestAppearanceMask -PropertyType Binary -Force | Out-Null
+        Add-SetupResult -Category Applied -Message 'Visual effects mask set to best appearance'
+        Write-SetupLog 'Configured: Visual effects mask set to best appearance' -Level SUCCESS
+        $changed = $true
+    }
+
+    return $changed
+}
+
 function Set-WindowsTerminalShiftEnter {
     $escapeSequence = ([char]0x1b).ToString() + '13;2u'
     $paths = @(
@@ -244,7 +312,9 @@ try {
         }
     }
 
-    Set-RegistryValueIfNeeded -Path 'HKCU:\Control Panel\Desktop' -Name 'FontSmoothing' -Value '2' -Type String -Description 'Smooth edges of screen fonts enabled' | Out-Null
+    if (Set-BestAppearanceVisualEffectsIfNeeded) {
+        $explorerRestartNeeded = $true
+    }
 
     Set-WindowsTerminalShiftEnter
 

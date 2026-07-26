@@ -18,13 +18,13 @@ Applies Windows/user preferences idempotently.
 - Sets Storage Sense cadence to monthly.
 - Turns Bluetooth radio off without disabling the Bluetooth adapter.
 - Hides the Recycle Bin desktop icon.
-- Keeps smooth screen font edges enabled.
+- Sets Windows visual effects to best appearance (animations, shadows, Aero Peek, and related effects enabled).
 - Adds Windows Terminal `shift+enter` binding to send the escape sequence for newline input.
 
 ## Behavior
 
 - Requires Administrator and Windows 11.
 - Leaves already-correct settings unchanged.
-- Restarts Explorer only when Explorer-related settings changed.
+- Restarts Explorer when Explorer-related or visual-effect settings changed.
 - Never restarts Windows automatically.
 - Windows writing-service changes can require signing out; they do not change spelling features managed by individual applications.

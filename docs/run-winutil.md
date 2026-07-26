@@ -18,7 +18,6 @@ Runs the remote WinUtil script from `https://christitus.com/win` in a separate P
 - `WPFTweaksHiber`: Disables hibernation and removes hiberfil.sys usage.
 - `WPFTweaksDeliveryOptimization`: Stops Windows update peer sharing.
 - `WPFTweaksDisableBGapps`: Prevents Store apps from running in the background.
-- `WPFTweaksDisplay`: Reduces visual effects for better responsiveness.
 - `WPFTweaksWidget`: Removes Windows Widgets/Web Experience components.
 - `WPFTweaksDisableStoreSearch`: Hides Microsoft Store recommendations in search.
 - `WPFTweaksRemoveHomeAndGallery`: Removes Explorer Home/Gallery and opens This PC.
